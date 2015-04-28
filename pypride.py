@@ -10,6 +10,7 @@
 #
 # --                                                            ; }}}1
 
+                                                                # {{{1
 """
 
 Python PRIDE implementation
@@ -72,14 +73,15 @@ Examples
 Links
 -----
 
-  https://eprint.iacr.org/2014/453.pdf (specification)
-  https://www.gnu.org/licenses/lgpl-3.0.html (license)
+https://eprint.iacr.org/2014/453.pdf (specification)
+https://www.gnu.org/licenses/lgpl-3.0.html (license)
 
 """
+                                                                # }}}1
 
 import numpy
 
-class Pride(object):
+class Pride(object):                                            # {{{1
 
   """PRIDE cipher"""
 
@@ -97,7 +99,7 @@ class Pride(object):
     self.k0         = key[:8]
     self.k1         = key[8:]
     self.rounds     = rounds
-    self.roundkeys  = [ f(i, self.k0) for i in xrange(rounds) ]
+    self.roundkeys  = [ f(i, self.k1) for i in xrange(rounds) ]
 
   def encrypt(self, block):
     """
@@ -107,8 +109,21 @@ class Pride(object):
     returns:  ciphertext block as rawstring
     """
 
-    return ""
+    state = str2int(block)
+    state = p_layer_inv(state)
+    state = whiten(state, self.k0)
+    for i in xrange(self.rounds):
+      state = add_roundkey(state, p_layer_inv(self.roundkeys[i]))
+      state = s_layer(state)
+      if i != self.rounds -1:
+        state = p_layer(state)
+        state = l_layer(state)
+        state = p_layer_inv(state)
+    state = whiten(state, self.k2)
+    state = p_layer(state)
+    return int2str(state, 8)
 
+  # TODO
   def decrypt(self, block):
     """
     Decrypt 1 block (8 bytes)
@@ -121,7 +136,75 @@ class Pride(object):
 
   def get_block_size(self):
     return 8
+                                                                # }}}1
 
+def xor_key(state, key):
+  """
+  XOR key
+
+  state:    state as integer
+  key:      key as rawstring
+  returns:  state as integer
+  """
+
+  return state ^ str2int(key)
+
+whiten        = xor_key   # key whitening
+add_roundkey  = xor_key   # add round key
+
+def p_layer(state, inv = False):
+  """
+  apply permutation matrix P
+
+  state:    state as integer
+  returns:  new state as integer
+  """
+
+  p = P if not inv else P_inv
+  state_ = 0
+  for i in xrange(64):
+    state_ |= ((state >> i) & 0b1) << p[i]
+  return state_
+
+def p_layer_inv(state):
+  """apply permutation matrix P_inv"""
+  return p_layer(state, True)
+
+def s_layer(state, inv = False):
+  """
+  apply S-box S
+
+  state:    state as integer
+  returns:  new state as integer
+  """
+
+  s = S if not inv else S_inv
+  state_ = 0
+  for i in xrange(16):
+    state_ |= s[(state >> (i*4)) & 0xF] << (i*4)
+  return state_
+
+def s_layer_inv(state):
+  """apply S-box S_inv"""
+  return s_layer(state, True)
+
+def l_layer(state, inv = False):
+  """
+  apply linear mappings L[0-3]
+
+  state:    state as integer
+  returns:  new state as integer
+  """
+
+  l = [L3,L2,L1,L0] if not inv else [L3_inv,L2_inv,L1_inv,L0_inv]
+  state_ = 0
+  for i in xrange(4):
+    state_ |= l[i][(state >> (i*16)) & 0xFFFF] << (i*16)
+  return state_
+
+def l_layer_inv(state):
+  """apply linear mappings L[0-3]_inv"""
+  return l_layer(state, True)
 
 def f(i, k1):
   """
@@ -132,8 +215,8 @@ def f(i, k1):
   returns:  round key as rawstring
   """
   return "".join(
-    int2str(g(str2int(k1[j]), i, j // 2)) if j % 2 else k1[j]
-      for j in xrange(8):
+    int2str(g(str2int(k1[j]), i, j // 2)) if j%2 else k1[j]
+      for j in xrange(8)
   )
 
 def g(x, i, j):
@@ -161,11 +244,14 @@ def p():
   return m
 
 P     = p()
-P_inv = [ P.index(i) for i in xrange(64) ]
+S     = [ 0x0, 0x4, 0x8, 0xF, 0x1, 0x5, 0xE, 0x9,
+          0x2, 0x7, 0xA, 0xC, 0xB, 0xD, 0x6, 0x3 ]
 
-S     = [ 0x0, 0x4, 0x8, 0xf, 0x1, 0x5, 0xe, 0x9,
-          0x2, 0x7, 0xa, 0xc, 0xb, 0xd, 0x6, 0x3 ]
+P_inv = [ P.index(i) for i in xrange(64) ]
 S_inv = [ S.index(i) for i in xrange(16) ]
+del i # leaky scope
+
+# L[0-3]{,_inv}                                                 # {{{1
 
 L0 = [
   0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,
@@ -284,6 +370,7 @@ L3 = [
 ]
 
 L3_inv = L3
+                                                                # }}}1
 
 
 def str2int(x):
