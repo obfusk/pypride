@@ -5,7 +5,8 @@
 # Date        : 2015-04-28
 #
 # Copyright   : Copyright (C) 2015  Felix C. Stegerman
-# Licence     : LGPLv3+
+# Version     : v0.0.1
+# License     : LGPLv3+
 #
 # --                                                            ; }}}1
 
@@ -71,8 +72,8 @@ Examples
 Links
 -----
 
-  https://eprint.iacr.org/2014/453.pdf
-  https://www.gnu.org/licenses/lgpl-3.0.html
+  https://eprint.iacr.org/2014/453.pdf (specification)
+  https://www.gnu.org/licenses/lgpl-3.0.html (license)
 
 """
 
@@ -102,8 +103,8 @@ class Pride(object):
     """
     Encrypt 1 block (8 bytes)
 
-    block:    plaintext block as raw string
-    returns:  ciphertext block as raw string
+    block:    plaintext block as rawstring
+    returns:  ciphertext block as rawstring
     """
 
     return ""
@@ -112,8 +113,8 @@ class Pride(object):
     """
     Decrypt 1 block (8 bytes)
 
-    block:    plaintext block as raw string
-    returns:  ciphertext block as raw string
+    block:    plaintext block as rawstring
+    returns:  ciphertext block as rawstring
     """
 
     return ""
@@ -122,23 +123,37 @@ class Pride(object):
     return 8
 
 
-def f(i, k):
-  """..."""
-  k_ = ""
-  for j in xrange(8):
-    if j % 2 == 0:
-      k_ += k[j]
-    else:
-      k_ += int2str(g(str2int(k[j]), i, j // 2), 1)
-  return k_
+def f(i, k1):
+  """
+  round key (see specification)
+
+  i:        round number (1 <= i <= rounds)
+  k1:       round key basis as rawstring
+  returns:  round key as rawstring
+  """
+  return "".join(
+    int2str(g(str2int(k1[j]), i, j // 2)) if j % 2 else k1[j]
+      for j in xrange(8):
+  )
 
 def g(x, i, j):
-  """..."""
+  """
+  dynamic part of round key (see specification)
+
+  x:        key part (1 byte) as integer
+  i:        round number
+  j:        part number (0 <= j <= 3)
+  returns:  integer
+  """
   m = { 0: 193, 1: 165, 2: 81, 3: 197 }
   return (x + m[j]*i) % 256
 
 def p():
-  """..."""
+  """
+  permutation matrix (see specification)
+
+  returns: array of indices as interers
+  """
   m = [None]*64
   for i in xrange(4):
     for j in xrange(16):
@@ -272,11 +287,11 @@ L3_inv = L3
 
 
 def str2int(x):
-  """..."""
+  """convert rawstring to integer"""
   return int(x.encode("hex"), 16)
 
 def int2str(x, n = 1):
-  """..."""
+  """convert integer to rawstring of length (at least) n"""
   return ("%0*x" % (n*2,x)).decode("hex")
 
 
