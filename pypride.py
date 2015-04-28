@@ -13,18 +13,63 @@
 
 Python PRIDE implementation
 
-...
+Examples
+--------
 
-Plaintext        k0               k1               Ciphertext
-0000000000000000 0000000000000000 0000000000000000 82b4109fcc70bd1f
-ffffffffffffffff 0000000000000000 0000000000000000 d70e60680a17b956
-0000000000000000 ffffffffffffffff 0000000000000000 28f19f97f5e846a9
-0000000000000000 0000000000000000 ffffffffffffffff d123ebaf368fce62
-0123456789abcdef 0000000000000000 fedcba9876543210 d1372929712d336e
+>>> from pypride import Pride
 
-...
+>>> key1      = "00000000000000000000000000000000".decode("hex")
+>>> plain1    = "0000000000000000".decode("hex")
+>>> cipher1   = Pride(key1)
+>>> encrypted1 = cipher1.encrypt(plain1)
+>>> encrypted1.encode("hex")
+"82b4109fcc70bd1f"
+>>> decrypted1 = cipher1.decrypt(encrypted1)
+>>> decrypted1.encode("hex")
+"0000000000000000"
 
-Links:
+>>> key2      = "00000000000000000000000000000000".decode("hex")
+>>> plain2    = "ffffffffffffffff".decode("hex")
+>>> cipher2   = Pride(key2)
+>>> encrypted2 = cipher2.encrypt(plain2)
+>>> encrypted2.encode("hex")
+"d70e60680a17b956"
+>>> decrypted2 = cipher2.decrypt(encrypted2)
+>>> decrypted2.encode("hex")
+"ffffffffffffffff"
+
+>>> key3      = "ffffffffffffffff0000000000000000".decode("hex")
+>>> plain3    = "0000000000000000".decode("hex")
+>>> cipher3   = Pride(key3)
+>>> encrypted3 = cipher3.encrypt(plain3)
+>>> encrypted3.encode("hex")
+"28f19f97f5e846a9"
+>>> decrypted3 = cipher3.decrypt(encrypted3)
+>>> decrypted3.encode("hex")
+"0000000000000000"
+
+>>> key4      = "0000000000000000ffffffffffffffff".decode("hex")
+>>> plain4    = "0000000000000000".decode("hex")
+>>> cipher4   = Pride(key4)
+>>> encrypted4 = cipher4.encrypt(plain4)
+>>> encrypted4.encode("hex")
+"d123ebaf368fce62"
+>>> decrypted4 = cipher4.decrypt(encrypted4)
+>>> decrypted4.encode("hex")
+"0000000000000000"
+
+>>> key5      = "0000000000000000fedcba9876543210".decode("hex")
+>>> plain5    = "0123456789abcdef".decode("hex")
+>>> cipher5   = Pride(key5)
+>>> encrypted5 = cipher5.encrypt(plain5)
+>>> encrypted5.encode("hex")
+"d1372929712d336e"
+>>> decrypted5 = cipher5.decrypt(encrypted5)
+>>> decrypted5.encode("hex")
+"0123456789abcdef"
+
+Links
+-----
 
   https://eprint.iacr.org/2014/453.pdf
   https://www.gnu.org/licenses/lgpl-3.0.html
@@ -33,36 +78,67 @@ Links:
 
 import numpy
 
-def str2int(x):
-  """..."""
-  return int(x.encode("hex"), 16)
-
-def int2str(x, n = 1):
-  """..."""
-  return ("%0*x" % (n*2,x)).decode("hex")
-
-
 class Pride(object):
 
-  """..."""
+  """PRIDE cipher"""
 
   def __init__(self, key, rounds = 20):
-    """..."""
-    pass
+    """
+    Create a PRIDE cipher object
+
+    key:      the key as a 128-bit rawstring
+    rounds:   the number of rounds as an integer (32 by default)
+    """
+
+    if len(key) != 16:
+      raise ValueError, "Key must be a 128-bit rawstring"
+
+    self.k0         = key[:8]
+    self.k1         = key[8:]
+    self.rounds     = rounds
+    self.roundkeys  = [ f(i, self.k0) for i in xrange(rounds) ]
 
   def encrypt(self, block):
-    """..."""
-    pass
+    """
+    Encrypt 1 block (8 bytes)
+
+    block:    plaintext block as raw string
+    returns:  ciphertext block as raw string
+    """
+
+    return ""
 
   def decrypt(self, block):
-    """..."""
-    pass
+    """
+    Decrypt 1 block (8 bytes)
+
+    block:    plaintext block as raw string
+    returns:  ciphertext block as raw string
+    """
+
+    return ""
 
   def get_block_size(self):
-    pass
+    return 8
 
+
+def f(i, k):
+  """..."""
+  k_ = ""
+  for j in xrange(8):
+    if j % 2 == 0:
+      k_ += k[j]
+    else:
+      k_ += int2str(g(str2int(k[j]), i, j // 2), 1)
+  return k_
+
+def g(x, i, j):
+  """..."""
+  m = { 0: 193, 1: 165, 2: 81, 3: 197 }
+  return (x + m[j]*i) % 256
 
 def p():
+  """..."""
   m = [None]*64
   for i in xrange(4):
     for j in xrange(16):
@@ -70,7 +146,11 @@ def p():
   return m
 
 P     = p()
-P_inv = [P.index(i) for i in xrange(64)]
+P_inv = [ P.index(i) for i in xrange(64) ]
+
+S     = [ 0x0, 0x4, 0x8, 0xf, 0x1, 0x5, 0xe, 0x9,
+          0x2, 0x7, 0xa, 0xc, 0xb, 0xd, 0x6, 0x3 ]
+S_inv = [ S.index(i) for i in xrange(16) ]
 
 L0 = [
   0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,
@@ -189,6 +269,15 @@ L3 = [
 ]
 
 L3_inv = L3
+
+
+def str2int(x):
+  """..."""
+  return int(x.encode("hex"), 16)
+
+def int2str(x, n = 1):
+  """..."""
+  return ("%0*x" % (n*2,x)).decode("hex")
 
 
 if __name__ == "__main__":
