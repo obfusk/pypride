@@ -5,77 +5,94 @@
 # Date        : 2015-04-28
 #
 # Copyright   : Copyright (C) 2015  Felix C. Stegerman
-# Version     : v0.1.0
+# Version     : v0.1.1
 # License     : LGPLv3+
 #
 # --                                                            ; }}}1
 
                                                                 # {{{1
 """
-Python PRIDE cipher implementation
-
-Examples
---------
-
->>> from pypride import Pride
-
->>> key1      = "00000000000000000000000000000000".decode("hex")
->>> plain1    = "0000000000000000".decode("hex")
->>> cipher1   = Pride(key1)
->>> encrypted1 = cipher1.encrypt(plain1)
->>> encrypted1.encode("hex")
-'82b4109fcc70bd1f'
->>> decrypted1 = cipher1.decrypt(encrypted1)
->>> decrypted1.encode("hex")
-'0000000000000000'
-
->>> key2      = "00000000000000000000000000000000".decode("hex")
->>> plain2    = "ffffffffffffffff".decode("hex")
->>> cipher2   = Pride(key2)
->>> encrypted2 = cipher2.encrypt(plain2)
->>> encrypted2.encode("hex")
-'d70e60680a17b956'
->>> decrypted2 = cipher2.decrypt(encrypted2)
->>> decrypted2.encode("hex")
-'ffffffffffffffff'
-
->>> key3      = "ffffffffffffffff0000000000000000".decode("hex")
->>> plain3    = "0000000000000000".decode("hex")
->>> cipher3   = Pride(key3)
->>> encrypted3 = cipher3.encrypt(plain3)
->>> encrypted3.encode("hex")
-'28f19f97f5e846a9'
->>> decrypted3 = cipher3.decrypt(encrypted3)
->>> decrypted3.encode("hex")
-'0000000000000000'
-
->>> key4      = "0000000000000000ffffffffffffffff".decode("hex")
->>> plain4    = "0000000000000000".decode("hex")
->>> cipher4   = Pride(key4)
->>> encrypted4 = cipher4.encrypt(plain4)
->>> encrypted4.encode("hex")
-'d123ebaf368fce62'
->>> decrypted4 = cipher4.decrypt(encrypted4)
->>> decrypted4.encode("hex")
-'0000000000000000'
-
->>> key5      = "0000000000000000fedcba9876543210".decode("hex")
->>> plain5    = "0123456789abcdef".decode("hex")
->>> cipher5   = Pride(key5)
->>> encrypted5 = cipher5.encrypt(plain5)
->>> encrypted5.encode("hex")
-'d1372929712d336e'
->>> decrypted5 = cipher5.decrypt(encrypted5)
->>> decrypted5.encode("hex")
-'0123456789abcdef'
+Python (2+3) PRIDE cipher implementation
 
 Links
 -----
 
 https://eprint.iacr.org/2014/453.pdf (specification)
 https://www.gnu.org/licenses/lgpl-3.0.html (license)
+
+Example
+-------
+
+>>> import binascii as B
+>>> import pypride as P
+
+>>> key1      = B.unhexlify("00000000000000000000000000000000")
+>>> plain1    = B.unhexlify("0000000000000000")
+>>> cipher1   = P.Pride(key1)
+>>> encrypted1 = cipher1.encrypt(plain1)
+>>> P.b2s(B.hexlify(encrypted1))  # b2s so it works w/ python 2 and 3
+'82b4109fcc70bd1f'
+>>> decrypted1 = cipher1.decrypt(encrypted1)
+>>> P.b2s(B.hexlify(decrypted1))
+'0000000000000000'
+
+More Testvectors
+----------------
+
+>>> key2      = B.unhexlify("00000000000000000000000000000000")
+>>> plain2    = B.unhexlify("ffffffffffffffff")
+>>> cipher2   = P.Pride(key2)
+>>> encrypted2 = cipher2.encrypt(plain2)
+>>> P.b2s(B.hexlify(encrypted2))
+'d70e60680a17b956'
+>>> decrypted2 = cipher2.decrypt(encrypted2)
+>>> P.b2s(B.hexlify(decrypted2))
+'ffffffffffffffff'
+
+>>> key3      = B.unhexlify("ffffffffffffffff0000000000000000")
+>>> plain3    = B.unhexlify("0000000000000000")
+>>> cipher3   = P.Pride(key3)
+>>> encrypted3 = cipher3.encrypt(plain3)
+>>> P.b2s(B.hexlify(encrypted3))
+'28f19f97f5e846a9'
+>>> decrypted3 = cipher3.decrypt(encrypted3)
+>>> P.b2s(B.hexlify(decrypted3))
+'0000000000000000'
+
+>>> key4      = B.unhexlify("0000000000000000ffffffffffffffff")
+>>> plain4    = B.unhexlify("0000000000000000")
+>>> cipher4   = P.Pride(key4)
+>>> encrypted4 = cipher4.encrypt(plain4)
+>>> P.b2s(B.hexlify(encrypted4))
+'d123ebaf368fce62'
+>>> decrypted4 = cipher4.decrypt(encrypted4)
+>>> P.b2s(B.hexlify(decrypted4))
+'0000000000000000'
+
+>>> key5      = B.unhexlify("0000000000000000fedcba9876543210")
+>>> plain5    = B.unhexlify("0123456789abcdef")
+>>> cipher5   = P.Pride(key5)
+>>> encrypted5 = cipher5.encrypt(plain5)
+>>> P.b2s(B.hexlify(encrypted5))
+'d1372929712d336e'
+>>> decrypted5 = cipher5.decrypt(encrypted5)
+>>> P.b2s(B.hexlify(decrypted5))
+'0123456789abcdef'
 """
                                                                 # }}}1
+
+import binascii, sys
+
+if sys.version_info.major == 2:
+  def b2s(x):
+    """convert bytes to str"""
+    return x
+else:
+  def b2s(x):
+    """convert bytes to str"""
+    if isinstance(x, str): return x
+    return x.decode("utf8")
+  xrange = range
 
 class Pride(object):                                            # {{{1
 
@@ -85,14 +102,14 @@ class Pride(object):                                            # {{{1
     """
     Create a PRIDE cipher object
 
-    key:      the key as a 128-bit rawstring
+    key:      the key as a 128-bit bytes
     rounds:   the number of rounds as an integer (32 by default)
     """
 
     if len(key) != 16:
-      raise ValueError, "Key must be a 128-bit rawstring"
+      raise ValueError("Key must be a 128-bit bytes")
 
-    self.k0, k1     = str2int(key[:8]), key[8:]
+    self.k0, k1     = b2i(key[:8]), key[8:]
     self.rounds     = rounds
     self.roundkeys  = [ f(i+1, k1) for i in xrange(rounds) ]
 
@@ -100,11 +117,11 @@ class Pride(object):                                            # {{{1
     """
     Encrypt 1 block (8 bytes)
 
-    block:    plaintext block as rawstring
-    returns:  ciphertext block as rawstring
+    block:    plaintext block as bytes
+    returns:  ciphertext block as bytes
     """
 
-    state = str2int(block)
+    state = b2i(block)
     state = p_layer_inv(state)
     state = whiten(state, self.k0)
     for i in xrange(self.rounds):
@@ -116,17 +133,17 @@ class Pride(object):                                            # {{{1
         state = p_layer_inv(state)
     state = whiten(state, self.k0)  # k2 = k0
     state = p_layer(state)
-    return int2str(state, 8)
+    return i2b(state, 8)
 
   def decrypt(self, block):
     """
     Decrypt 1 block (8 bytes)
 
-    block:    ciphertext block as rawstring
-    returns:  plaintext block as rawstring
+    block:    ciphertext block as bytes
+    returns:  plaintext block as bytes
     """
 
-    state = str2int(block)
+    state = b2i(block)
     state = p_layer_inv(state)
     state = whiten(state, self.k0)  # k2 = k0
     for i in xrange(self.rounds):
@@ -138,7 +155,7 @@ class Pride(object):                                            # {{{1
         state = p_layer_inv(state)
     state = whiten(state, self.k0)
     state = p_layer(state)
-    return int2str(state, 8)
+    return i2b(state, 8)
 
   def get_block_size(self):
     return 8
@@ -217,11 +234,12 @@ def f(i, k1):
   round key (see specification)
 
   i:        round number (1 <= i <= rounds)
-  k1:       round key basis as rawstring
+  k1:       round key basis as bytes
   returns:  round key as integer
   """
-  return str2int("".join(
-    int2str(g(str2int(k1[j]), i, j // 2)) if j%2 else k1[j]
+
+  return b2i(b"".join(
+    i2b(g(b2i(k1[j]), i, j // 2)) if j%2 else i2b(k1[j])
       for j in xrange(8)
   ))
 
@@ -234,6 +252,7 @@ def g(x, i, j):
   j:        part number (0 <= j <= 3)
   returns:  new key part (1 byte) as integer
   """
+
   m = { 0: 193, 1: 165, 2: 81, 3: 197 }
   return (x + m[j]*i) % 256
 
@@ -243,6 +262,7 @@ def p():
 
   returns: array of indices as integers
   """
+
   m = [None]*64
   for i in xrange(4):
     for j in xrange(16):
@@ -253,9 +273,8 @@ P     = p()
 S     = [ 0x0, 0x4, 0x8, 0xF, 0x1, 0x5, 0xE, 0x9,
           0x2, 0x7, 0xA, 0xC, 0xB, 0xD, 0x6, 0x3 ]
 
-P_inv = [ P.index(i) for i in xrange(64) ]
-S_inv = [ S.index(i) for i in xrange(16) ]
-del i # leaky scope
+P_inv = [ P.index(_i) for _i in xrange(64) ]
+S_inv = [ S.index(_i) for _i in xrange(16) ]
 
 # L[0-3]{,_inv}                                                 # {{{1
 
@@ -320,19 +339,20 @@ L3_inv = L3
 
 def matrix_mult(m, v):
   """binary multiplication of 16x16 matrix w/ vector"""
-  y = 0
+  w = 0
   for i,r in enumerate(m):
-    y |= (bin(r & v)[2:].count('1') % 2) << (15 - i)
-  return y
+    w |= (bin(r & v)[2:].count('1') % 2) << (15 - i)
+  return w
 
-def str2int(x):
-  """convert rawstring to integer"""
-  return int(x.encode("hex"), 16)
+def b2i(x):
+  """convert bytes to integer"""
+  if isinstance(x, int): return x
+  return int(binascii.hexlify(x), 16)
 
-def int2str(x, n = 1):
-  """convert integer to rawstring of length (at least) n"""
-  return ("%0*x" % (n*2,x)).decode("hex")
-
+def i2b(x, n = 1):
+  """convert integer to bytes of length (at least) n"""
+  if isinstance(x, bytes): return x
+  return binascii.unhexlify("%0*x" % (n*2,x))
 
 if __name__ == "__main__":
   import doctest

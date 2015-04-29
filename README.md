@@ -5,7 +5,7 @@
     Date        : 2015-04-28
 
     Copyright   : Copyright (C) 2015  Felix C. Stegerman
-    Version     : v0.1.0
+    Version     : v0.1.1
 
 []: }}}1
 
@@ -13,7 +13,7 @@
 
 ## Description
 
-pypride - python PRIDE cipher implementation
+pypride - python (2+3) PRIDE cipher implementation
 
 See [1] for the PRIDE specification; see `pypride.py` for the code
 (with examples).
