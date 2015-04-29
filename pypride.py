@@ -26,56 +26,56 @@ Example
 >>> import binascii as B
 >>> import pypride as P
 
->>> key1      = B.unhexlify("00000000000000000000000000000000")
->>> plain1    = B.unhexlify("0000000000000000")
->>> cipher1   = P.Pride(key1)
->>> encrypted1 = cipher1.encrypt(plain1)
+>>> key1        = B.unhexlify("00000000000000000000000000000000")
+>>> plain1      = B.unhexlify("0000000000000000")
+>>> cipher1     = P.Pride(key1)
+>>> encrypted1  = cipher1.encrypt(plain1)
 >>> P.b2s(B.hexlify(encrypted1))  # b2s so it works w/ python 2 and 3
 '82b4109fcc70bd1f'
->>> decrypted1 = cipher1.decrypt(encrypted1)
+>>> decrypted1  = cipher1.decrypt(encrypted1)
 >>> P.b2s(B.hexlify(decrypted1))
 '0000000000000000'
 
 More Testvectors
 ----------------
 
->>> key2      = B.unhexlify("00000000000000000000000000000000")
->>> plain2    = B.unhexlify("ffffffffffffffff")
->>> cipher2   = P.Pride(key2)
->>> encrypted2 = cipher2.encrypt(plain2)
+>>> key2        = B.unhexlify("00000000000000000000000000000000")
+>>> plain2      = B.unhexlify("ffffffffffffffff")
+>>> cipher2     = P.Pride(key2)
+>>> encrypted2  = cipher2.encrypt(plain2)
 >>> P.b2s(B.hexlify(encrypted2))
 'd70e60680a17b956'
->>> decrypted2 = cipher2.decrypt(encrypted2)
+>>> decrypted2  = cipher2.decrypt(encrypted2)
 >>> P.b2s(B.hexlify(decrypted2))
 'ffffffffffffffff'
 
->>> key3      = B.unhexlify("ffffffffffffffff0000000000000000")
->>> plain3    = B.unhexlify("0000000000000000")
->>> cipher3   = P.Pride(key3)
->>> encrypted3 = cipher3.encrypt(plain3)
+>>> key3        = B.unhexlify("ffffffffffffffff0000000000000000")
+>>> plain3      = B.unhexlify("0000000000000000")
+>>> cipher3     = P.Pride(key3)
+>>> encrypted3  = cipher3.encrypt(plain3)
 >>> P.b2s(B.hexlify(encrypted3))
 '28f19f97f5e846a9'
->>> decrypted3 = cipher3.decrypt(encrypted3)
+>>> decrypted3  = cipher3.decrypt(encrypted3)
 >>> P.b2s(B.hexlify(decrypted3))
 '0000000000000000'
 
->>> key4      = B.unhexlify("0000000000000000ffffffffffffffff")
->>> plain4    = B.unhexlify("0000000000000000")
->>> cipher4   = P.Pride(key4)
->>> encrypted4 = cipher4.encrypt(plain4)
+>>> key4        = B.unhexlify("0000000000000000ffffffffffffffff")
+>>> plain4      = B.unhexlify("0000000000000000")
+>>> cipher4     = P.Pride(key4)
+>>> encrypted4  = cipher4.encrypt(plain4)
 >>> P.b2s(B.hexlify(encrypted4))
 'd123ebaf368fce62'
->>> decrypted4 = cipher4.decrypt(encrypted4)
+>>> decrypted4  = cipher4.decrypt(encrypted4)
 >>> P.b2s(B.hexlify(decrypted4))
 '0000000000000000'
 
->>> key5      = B.unhexlify("0000000000000000fedcba9876543210")
->>> plain5    = B.unhexlify("0123456789abcdef")
->>> cipher5   = P.Pride(key5)
->>> encrypted5 = cipher5.encrypt(plain5)
+>>> key5        = B.unhexlify("0000000000000000fedcba9876543210")
+>>> plain5      = B.unhexlify("0123456789abcdef")
+>>> cipher5     = P.Pride(key5)
+>>> encrypted5  = cipher5.encrypt(plain5)
 >>> P.b2s(B.hexlify(encrypted5))
 'd1372929712d336e'
->>> decrypted5 = cipher5.decrypt(encrypted5)
+>>> decrypted5  = cipher5.decrypt(encrypted5)
 >>> P.b2s(B.hexlify(decrypted5))
 '0123456789abcdef'
 """
