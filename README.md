@@ -2,14 +2,15 @@
 
     File        : README.md
     Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-    Date        : 2015-04-28
+    Date        : 2016-10-20
 
-    Copyright   : Copyright (C) 2015  Felix C. Stegerman
+    Copyright   : Copyright (C) 2016  Felix C. Stegerman
     Version     : v0.1.1
 
 []: }}}1
 
 <!-- badge? -->
+[![Build Status](https://travis-ci.org/obfusk/pypride.png)](https://travis-ci.org/obfusk/pypride)
 
 ## Description
 

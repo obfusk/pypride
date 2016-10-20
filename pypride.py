@@ -2,9 +2,9 @@
 #
 # File        : pypride.py
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2015-04-28
+# Date        : 2016-10-20
 #
-# Copyright   : Copyright (C) 2015  Felix C. Stegerman
+# Copyright   : Copyright (C) 2016  Felix C. Stegerman
 # Version     : v0.1.1
 # License     : LGPLv3+
 #
@@ -356,6 +356,7 @@ def i2b(x, n = 1):
 
 if __name__ == "__main__":
   import doctest
-  doctest.testmod()
+  failures, tests = doctest.testmod()
+  sys.exit(0 if failures == 0 else 1)
 
 # vim: set tw=70 sw=2 sts=2 et fdm=marker :
