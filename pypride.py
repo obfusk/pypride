@@ -26,8 +26,8 @@ Example
 >>> import binascii as B
 >>> import pypride as P
 
->>> key1        = B.unhexlify("00000000000000000000000000000000")
->>> plain1      = B.unhexlify("0000000000000000")
+>>> key1        = B.unhexlify(b"00000000000000000000000000000000")
+>>> plain1      = B.unhexlify(b"0000000000000000")
 >>> cipher1     = P.Pride(key1)
 >>> encrypted1  = cipher1.encrypt(plain1)
 >>> P.b2s(B.hexlify(encrypted1))  # b2s so it works w/ python 2 and 3
@@ -39,8 +39,8 @@ Example
 More Testvectors
 ----------------
 
->>> key2        = B.unhexlify("00000000000000000000000000000000")
->>> plain2      = B.unhexlify("ffffffffffffffff")
+>>> key2        = B.unhexlify(b"00000000000000000000000000000000")
+>>> plain2      = B.unhexlify(b"ffffffffffffffff")
 >>> cipher2     = P.Pride(key2)
 >>> encrypted2  = cipher2.encrypt(plain2)
 >>> P.b2s(B.hexlify(encrypted2))
@@ -49,8 +49,8 @@ More Testvectors
 >>> P.b2s(B.hexlify(decrypted2))
 'ffffffffffffffff'
 
->>> key3        = B.unhexlify("ffffffffffffffff0000000000000000")
->>> plain3      = B.unhexlify("0000000000000000")
+>>> key3        = B.unhexlify(b"ffffffffffffffff0000000000000000")
+>>> plain3      = B.unhexlify(b"0000000000000000")
 >>> cipher3     = P.Pride(key3)
 >>> encrypted3  = cipher3.encrypt(plain3)
 >>> P.b2s(B.hexlify(encrypted3))
@@ -59,8 +59,8 @@ More Testvectors
 >>> P.b2s(B.hexlify(decrypted3))
 '0000000000000000'
 
->>> key4        = B.unhexlify("0000000000000000ffffffffffffffff")
->>> plain4      = B.unhexlify("0000000000000000")
+>>> key4        = B.unhexlify(b"0000000000000000ffffffffffffffff")
+>>> plain4      = B.unhexlify(b"0000000000000000")
 >>> cipher4     = P.Pride(key4)
 >>> encrypted4  = cipher4.encrypt(plain4)
 >>> P.b2s(B.hexlify(encrypted4))
@@ -69,8 +69,8 @@ More Testvectors
 >>> P.b2s(B.hexlify(decrypted4))
 '0000000000000000'
 
->>> key5        = B.unhexlify("0000000000000000fedcba9876543210")
->>> plain5      = B.unhexlify("0123456789abcdef")
+>>> key5        = B.unhexlify(b"0000000000000000fedcba9876543210")
+>>> plain5      = B.unhexlify(b"0123456789abcdef")
 >>> cipher5     = P.Pride(key5)
 >>> encrypted5  = cipher5.encrypt(plain5)
 >>> P.b2s(B.hexlify(encrypted5))
@@ -87,11 +87,18 @@ if sys.version_info.major == 2:
   def b2s(x):
     """convert bytes to str"""
     return x
+  def s2b(x):
+    """convert str to bytes"""
+    return x
 else:
   def b2s(x):
     """convert bytes to str"""
     if isinstance(x, str): return x
     return x.decode("utf8")
+  def s2b(x):
+    """convert str to bytes"""
+    if isinstance(x, bytes): return x
+    return x.encode("utf8")
   xrange = range
 
 class Pride(object):                                            # {{{1
@@ -352,11 +359,11 @@ def b2i(x):
 def i2b(x, n = 1):
   """convert integer to bytes of length (at least) n"""
   if isinstance(x, bytes): return x
-  return binascii.unhexlify("%0*x" % (n*2,x))
+  return binascii.unhexlify(s2b("%0*x" % (n*2,x)))
 
 if __name__ == "__main__":
   import doctest
-  failures, tests = doctest.testmod()
+  failures, tests = doctest.testmod(verbose = "-v" in sys.argv[1:])
   sys.exit(0 if failures == 0 else 1)
 
 # vim: set tw=70 sw=2 sts=2 et fdm=marker :
